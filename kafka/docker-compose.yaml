@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    container_name: zookeeper
+    restart: unless-stopped
+    ports:
+      - "${ZOOKEEPER_PORT:-2181}:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - zookeeper_data:/bitnami
+    networks:
+      - msgbus
+
+  kafka:
+    image: bitnami/kafka:3.7
+    container_name: kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      # ให้ต่อจาก host ใช้พอร์ต ${KAFKA_PORT:-9092}
+      # map ไป listener EXTERNAL ใน container ที่ 9094
+      - "${KAFKA_PORT:-9092}:9094"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      # 2 listeners: ภายใน docker network (PLAINTEXT) และสำหรับภายนอก host (EXTERNAL)
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://${HOST_IP:-127.0.0.1}:${KAFKA_PORT:-9092}
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - msgbus
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    ports:
+      - "${KAFKA_UI_PORT:-8081}:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=${KAFKA_CLUSTER_NAME:-local}
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    networks:
+      - msgbus
+
+volumes:
+  zookeeper_data:
+  kafka_data:
+
+networks:
+  msgbus:
+    name: msgbus
