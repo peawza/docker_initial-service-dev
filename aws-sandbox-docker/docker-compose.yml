@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"   # LocalStack edge port (ทุกบริการวิ่งพอร์ตนี้)
+      - "4571:4571"
+    environment:
+      - SERVICES=lambda,apigateway,s3,iam,sts,logs,cloudwatch
+      - DEBUG=1
+      - DATA_DIR=/var/lib/localstack/data
+      - AWS_DEFAULT_REGION=ap-southeast-1
+      - LAMBDA_EXECUTOR=docker-reuse
+      - LAMBDA_MEMORY_SIZE=256
+      - PERSISTENCE=1
+    volumes:
+      - ./localstack:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  registry:
+    image: registry:2
+    container_name: dev-registry
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+    volumes:
+      - ./registry:/var/lib/registry

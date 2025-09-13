@@ -1,0 +1,32 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure Storage Emulator", "Azure Storage Emulator", "{DA9F9384-7EE0-070E-4189-3633B14A3094}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E32E53BF-A73C-451C-9624-FF179D9960DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzuriteSample", "Azure Storage Emulator\samples\dotnet\AzuriteSample.csproj", "{4FF1A2AB-1E8F-49DE-E74C-93473DC952F5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4FF1A2AB-1E8F-49DE-E74C-93473DC952F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FF1A2AB-1E8F-49DE-E74C-93473DC952F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FF1A2AB-1E8F-49DE-E74C-93473DC952F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FF1A2AB-1E8F-49DE-E74C-93473DC952F5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E32E53BF-A73C-451C-9624-FF179D9960DF} = {DA9F9384-7EE0-070E-4189-3633B14A3094}
+		{4FF1A2AB-1E8F-49DE-E74C-93473DC952F5} = {E32E53BF-A73C-451C-9624-FF179D9960DF}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6A39B4D2-9B75-4E8F-BCAF-D1F2A2B332D2}
+	EndGlobalSection
+EndGlobal
