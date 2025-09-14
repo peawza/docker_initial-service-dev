@@ -12,6 +12,9 @@
    docker compose up -d
    ```
 
+
+
+chmod +x ./init.sh
 3. ตั้งค่า AWS CLI (ค่าใส่อะไรก็ได้)
    ```bash
    aws configure

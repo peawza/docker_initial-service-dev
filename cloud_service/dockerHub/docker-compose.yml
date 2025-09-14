@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  registry:
+    image: registry:2
+    container_name: dev-registry
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '[*]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '[GET,PUT,POST,DELETE,OPTIONS]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '[Authorization,Accept,Cache-Control]'
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: "Registry Realm"
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+    volumes:
+      - ./registry:/var/lib/registry
+      - ./auth:/auth
+
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    container_name: dev-registry-ui
+    restart: unless-stopped
+    ports:
+      - "5001:80"
+    environment:
+      - REGISTRY_TITLE=Dev Registry
+      - NGINX_PROXY_PASS_URL=http://registry:5000
+      - SINGLE_REGISTRY=true
+      - DELETE_IMAGES=true
+    depends_on:
+      - registry
