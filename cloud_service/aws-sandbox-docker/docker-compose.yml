@@ -47,22 +47,41 @@ services:
     ports:
       - "8085:8080"   # เปิด GUI ที่ http://localhost:8085
 
-  sqsadmin:
-    image: pacovk/sqs-admin:latest
-    container_name: sqs-admin
+  # sqsadmin:
+  #   image: pacovk/sqs-admin:latest
+  #   container_name: sqs-admin
+  #   restart: unless-stopped
+  #   depends_on:
+  #     localstack:
+  #       condition: service_healthy
+  #   environment:
+  #     # อ่านจาก .env
+  #     AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-test}
+  #     AWS_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-test}
+  #     AWS_REGION: ap-southeast-1          
+  #     REGION: ap-southeast-1              
+  #     DEFAULT_REGION: ap-southeast-1      
+  #     AWS_ENDPOINT_URL: http://localstack:4566
+  #   ports:
+  #     - "${SQSADMIN_HOST_PORT:-8087}:3999"   # เปิดที่ http://localhost:8087
+
+
+  awsui:
+    build: ./awsui
+    container_name: awsui
     restart: unless-stopped
     depends_on:
       localstack:
         condition: service_healthy
     environment:
-      # อ่านจาก .env
       AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-test}
       AWS_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-test}
-      AWS_REGION: ${S3_REGION:-ap-southeast-1}
-      AWS_ENDPOINT_URL: ${S3_ENDPOINT}
+      AWS_REGION: ap-southeast-1
+      REGION: ap-southeast-1
+      DEFAULT_REGION: ap-southeast-1
+      AWS_ENDPOINT_URL: http://localstack:4566
     ports:
-      - "${SQSADMIN_HOST_PORT:-8087}:8080"   # เปิดที่ http://localhost:8087
-
+      - "8090:8000"   # เปิด GUI ที่ http://localhost:8090
 
   # Local Docker Registry (ตัวเลือก)
   registry:

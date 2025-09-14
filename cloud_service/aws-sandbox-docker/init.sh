@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-EDGE=http://localstack:4566     # <— สำคัญ: ใช้ hostname ของ service
+EDGE=http://localstack:4566
 REGION=ap-southeast-1
 
-echo "Waiting for LocalStack..."
-until curl -s ${EDGE}/_localstack/health | grep '"ready": true' >/dev/null 2>&1; do
+echo "⏳ Waiting for LocalStack (S3 + Lambda available)..."
+until (curl -s ${EDGE}/_localstack/health | grep -q '"s3": "available"') \
+   && (curl -s ${EDGE}/_localstack/health | grep -q '"lambda": "available"'); do
+   echo "⏳ Waiting for LocalStack (S3 + Lambda available)..."
   sleep 2
 done
-echo "LocalStack is ready."
+echo "✅ LocalStack is ready."
 
 # ---------- S3 ----------
 BUCKET=dev-sandbox-bucket
@@ -50,7 +52,7 @@ awslocal --endpoint-url ${EDGE} iam put-role-policy \
 ROLE_ARN=$(awslocal --endpoint-url ${EDGE} iam get-role --role-name "$ROLE_NAME" --query 'Role.Arn' --output text)
 echo "Role ARN: $ROLE_ARN"
 
-# ---------- Lambda (ทำ zip ด้วย python แทน 'zip' เพื่อไม่ต้องติดตั้งเพิ่ม) ----------
+# ---------- Lambda ----------
 mkdir -p /tmp/lambda-src
 cat >/tmp/lambda-src/index.mjs <<'EOF'
 export const handler = async (event) => {
@@ -62,16 +64,14 @@ export const handler = async (event) => {
 };
 EOF
 
-# สร้าง zip โดยใช้ python (เลี่ยงการพึ่งพาแพ็กเกจ 'zip')
 python3 - <<'PY'
-import zipfile, os
+import zipfile
 zf = zipfile.ZipFile('/tmp/lambda.zip','w',zipfile.ZIP_DEFLATED)
 zf.write('/tmp/lambda-src/index.mjs','index.mjs')
 zf.close()
 PY
 
 FUNCTION_NAME=hello-local
-# ถ้ามีอยู่แล้วให้ลบก่อน (ป้องกัน error จาก set -e)
 awslocal --endpoint-url ${EDGE} lambda delete-function --function-name "$FUNCTION_NAME" >/dev/null 2>&1 || true
 
 awslocal --endpoint-url ${EDGE} lambda create-function \
@@ -124,7 +124,14 @@ echo "API response:"
 curl -s "$API_URL" || true
 echo
 
+# # ---------- SQS ----------
+# awslocal --endpoint-url ${EDGE} sqs create-queue --queue-name demo-queue || true
+# echo "SQS queues:"
+# awslocal --endpoint-url ${EDGE} sqs list-queues || true
+# echo
+
+# ---------- Logs ----------
 echo "Log groups:"
 awslocal --endpoint-url ${EDGE} logs describe-log-groups --query 'logGroups[].logGroupName' || true
 
-echo "✅ init.sh finished."
+echo "🎉 init.sh finished."
