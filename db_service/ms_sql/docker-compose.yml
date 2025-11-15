@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -10,12 +9,15 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "P@ssw0rd"   
+      MSSQL_COLLATION: "Thai_CI_AS"
       MSSQL_PID: "FG86G-CHH2T-CB7NJ-XT7D2-V8V4X"
       TZ: "Asia/Bangkok"
       MSSQL_AGENT_ENABLED: "true"
     volumes:
       - mssql_data:/var/opt/mssql
-
 volumes:
   mssql_data:
     name: mssql_data
+
+
+
