@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  perf-test:
+    image: pivotalrabbitmq/perf-test:latest
+    container_name: rabbitmq-perf-test
+    # ดึงค่าจากไฟล์ .env
+    env_file:
+      - .env
+      
+    command: >
+      --uri ${PERF_SCHEME:-amqp}://${RABBITMQ_USER}:${RABBITMQ_PASS}@${PERF_HOST}:${PERF_PORT}/${PERF_VHOST:-%2F}
+      --producers ${PERF_PRODUCERS}
+      --consumers ${PERF_CONSUMERS}
+      --rate ${PERF_RATE}
+      --size ${PERF_SIZE}
+      --queue ${PERF_QUEUE_NAME}
+      --queue-durable
+      --message-persistent
+      --ack-mode ack
+      --confirm 1
