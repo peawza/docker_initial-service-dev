@@ -4,7 +4,6 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
-    container_name: elasticsearch
     environment:
       - discovery.type=single-node
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
@@ -15,31 +14,55 @@ services:
       - "${ES_PORT}:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:${ELASTIC_PASSWORD} http://localhost:9200/_cluster/health | grep -qv '\"status\":\"red\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     restart: always
+
+  setup_kibana_system:
+    image: curlimages/curl:8.7.1
+    command: >
+      sh -c "
+      until curl -s -u elastic:${ELASTIC_PASSWORD} http://elasticsearch:9200 >/dev/null; do sleep 5; done;
+      curl -s -u elastic:${ELASTIC_PASSWORD} -X POST http://elasticsearch:9200/_security/user/kibana_system/_password
+      -H 'Content-Type: application/json'
+      -d '{\"password\":\"${KIBANA_SYSTEM_PASSWORD}\"}';
+      "
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: "no"
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
-    container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
     ports:
       - "${KIBANA_PORT}:5601"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+      setup_kibana_system:
+        condition: service_completed_successfully
     restart: always
 
   fluentd:
     build: ./fluentd
-    container_name: fluentd
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     ports:
       - "${FLUENTD_PORT}:24224"
       - "${FLUENTD_PORT}:24224/udp"
     volumes:
       - ./fluentd/fluent.conf:/fluentd/etc/fluent.conf
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     restart: always
 
 volumes:
