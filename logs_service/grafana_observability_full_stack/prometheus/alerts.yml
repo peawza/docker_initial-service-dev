@@ -1,0 +1,29 @@
+groups:
+  - name: app-alerts
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(app_http_requests_total{status=~"5.."}[2m]))
+            /
+            clamp_min(sum(rate(app_http_requests_total[2m])), 1)
+          ) > 0.25
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate on debug-api"
+          description: "5xx ratio is above 25% for 2 minutes."
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(app_http_request_duration_seconds_bucket[5m]))
+          ) > 1.2
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High request latency p95"
+          description: "p95 latency is above 1.2 seconds for 3 minutes."
