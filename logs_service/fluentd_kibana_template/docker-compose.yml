@@ -1,0 +1,122 @@
+version: "3.9"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "${ES_PORT}:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:${ELASTIC_PASSWORD} http://localhost:9200/_cluster/health | grep -qv '\"status\":\"red\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 60s
+    restart: always
+
+  setup_security:
+    image: curlimages/curl:8.7.1
+    command: >
+      sh -c "
+      until curl -s -u elastic:${ELASTIC_PASSWORD} http://elasticsearch:9200 >/dev/null; do sleep 5; done;
+      curl -s -u elastic:${ELASTIC_PASSWORD} -X POST http://elasticsearch:9200/_security/user/kibana_system/_password -H 'Content-Type: application/json' -d '{\"password\":\"${KIBANA_SYSTEM_PASSWORD}\"}';
+      curl -s -u elastic:${ELASTIC_PASSWORD} -X PUT http://elasticsearch:9200/_security/role/fluentd_writer_role -H 'Content-Type: application/json' -d '{\"cluster\":[\"monitor\"],\"indices\":[{\"names\":[\"fluentd-template-*\"],\"privileges\":[\"create\",\"create_index\",\"write\",\"view_index_metadata\"]}]}';
+      curl -s -u elastic:${ELASTIC_PASSWORD} -X POST http://elasticsearch:9200/_security/user/${FLUENTD_ES_USER} -H 'Content-Type: application/json' -d '{\"password\":\"${FLUENTD_ES_PASSWORD}\",\"roles\":[\"fluentd_writer_role\"],\"full_name\":\"Fluentd Writer\"}';
+      "
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: "no"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD}
+    ports:
+      - "${KIBANA_PORT}:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      setup_security:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/login >/dev/null"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 40s
+    restart: always
+
+  kibana_bootstrap:
+    image: curlimages/curl:8.7.1
+    entrypoint: ["sh", "/scripts/bootstrap.sh"]
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    volumes:
+      - ./kibana/bootstrap.sh:/scripts/bootstrap.sh:ro
+    depends_on:
+      kibana:
+        condition: service_healthy
+    restart: "no"
+
+  fluentd:
+    build: ./fluentd
+    environment:
+      - FLUENTD_ES_USER=${FLUENTD_ES_USER}
+      - FLUENTD_ES_PASSWORD=${FLUENTD_ES_PASSWORD}
+    ports:
+      - "${FLUENTD_PORT}:24224"
+      - "${FLUENTD_PORT}:24224/udp"
+    volumes:
+      - ./fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      setup_security:
+        condition: service_completed_successfully
+    restart: always
+
+  linux_log_simulator:
+    image: alpine:3.20
+    command: >
+      sh -c "
+      while true; do
+        echo \"$(date -u +%FT%TZ) host=linux-node-01 level=info service=kernel message='systemd started sshd service'\";
+        echo \"$(date -u +%FT%TZ) host=linux-node-01 level=warning service=kernel message='disk usage at 82%'\";
+        sleep 5;
+      done
+      "
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: "127.0.0.1:${FLUENTD_PORT}"
+        tag: docker.linux.system
+    depends_on:
+      - fluentd
+    restart: always
+
+  api_log_simulator:
+    image: python:3.12-alpine
+    command: ["python", "-u", "/simulator/api_log_simulator.py"]
+    volumes:
+      - ./simulator/api_log_simulator.py:/simulator/api_log_simulator.py:ro
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: "127.0.0.1:${FLUENTD_PORT}"
+        tag: docker.api.calls
+    depends_on:
+      - fluentd
+    restart: always
+
+volumes:
+  esdata:
