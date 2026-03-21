@@ -1,0 +1,31 @@
+Title: Factory Incident Report #4
+Document ID: DOC-004
+Factory: Industrial Plant A
+Production Line: L-03
+Machine ID: M-8
+Date: 2026-02-15
+Shift: Morning
+
+Incident Type:
+Motor Vibration
+
+Details:
+Machine M-8 on production line L-03 experienced motor vibration during Morning shift.
+Temperature reading reached 81°C.
+Production efficiency dropped to 75%.
+Total downtime recorded: 36 minutes.
+
+Impact:
+- Production delay
+- Increased scrap rate
+- Maintenance intervention required
+
+Corrective Action:
+- Immediate inspection performed
+- Component replacement if required
+- Logged event in MES system
+
+Preventive Recommendation:
+- Schedule preventive maintenance
+- Enable predictive monitoring
+- Review machine health dashboard weekly

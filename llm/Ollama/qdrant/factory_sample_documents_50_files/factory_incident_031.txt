@@ -1,0 +1,31 @@
+Title: Factory Incident Report #31
+Document ID: DOC-031
+Factory: Industrial Plant A
+Production Line: L-08
+Machine ID: M-13
+Date: 2026-02-15
+Shift: Morning
+
+Incident Type:
+Sensor Failure
+
+Details:
+Machine M-13 on production line L-08 experienced sensor failure during Morning shift.
+Temperature reading reached 86°C.
+Production efficiency dropped to 72%.
+Total downtime recorded: 91 minutes.
+
+Impact:
+- Production delay
+- Increased scrap rate
+- Maintenance intervention required
+
+Corrective Action:
+- Immediate inspection performed
+- Component replacement if required
+- Logged event in MES system
+
+Preventive Recommendation:
+- Schedule preventive maintenance
+- Enable predictive monitoring
+- Review machine health dashboard weekly

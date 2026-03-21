@@ -1,0 +1,31 @@
+Title: Factory Incident Report #43
+Document ID: DOC-043
+Factory: Industrial Plant A
+Production Line: L-10
+Machine ID: M-12
+Date: 2026-02-15
+Shift: Afternoon
+
+Incident Type:
+Pressure Drop
+
+Details:
+Machine M-12 on production line L-10 experienced pressure drop during Afternoon shift.
+Temperature reading reached 96°C.
+Production efficiency dropped to 72%.
+Total downtime recorded: 62 minutes.
+
+Impact:
+- Production delay
+- Increased scrap rate
+- Maintenance intervention required
+
+Corrective Action:
+- Immediate inspection performed
+- Component replacement if required
+- Logged event in MES system
+
+Preventive Recommendation:
+- Schedule preventive maintenance
+- Enable predictive monitoring
+- Review machine health dashboard weekly

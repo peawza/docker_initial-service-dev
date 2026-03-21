@@ -1,0 +1,31 @@
+Title: Factory Incident Report #16
+Document ID: DOC-016
+Factory: Industrial Plant A
+Production Line: L-03
+Machine ID: M-8
+Date: 2026-02-15
+Shift: Night
+
+Incident Type:
+Hydraulic Leak
+
+Details:
+Machine M-8 on production line L-03 experienced hydraulic leak during Night shift.
+Temperature reading reached 88°C.
+Production efficiency dropped to 77%.
+Total downtime recorded: 98 minutes.
+
+Impact:
+- Production delay
+- Increased scrap rate
+- Maintenance intervention required
+
+Corrective Action:
+- Immediate inspection performed
+- Component replacement if required
+- Logged event in MES system
+
+Preventive Recommendation:
+- Schedule preventive maintenance
+- Enable predictive monitoring
+- Review machine health dashboard weekly

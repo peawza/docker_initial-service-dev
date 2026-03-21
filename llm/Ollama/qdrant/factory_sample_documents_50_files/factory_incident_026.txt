@@ -1,0 +1,31 @@
+Title: Factory Incident Report #26
+Document ID: DOC-026
+Factory: Industrial Plant A
+Production Line: L-09
+Machine ID: M-7
+Date: 2026-02-15
+Shift: Afternoon
+
+Incident Type:
+Overheating
+
+Details:
+Machine M-7 on production line L-09 experienced overheating during Afternoon shift.
+Temperature reading reached 91°C.
+Production efficiency dropped to 61%.
+Total downtime recorded: 108 minutes.
+
+Impact:
+- Production delay
+- Increased scrap rate
+- Maintenance intervention required
+
+Corrective Action:
+- Immediate inspection performed
+- Component replacement if required
+- Logged event in MES system
+
+Preventive Recommendation:
+- Schedule preventive maintenance
+- Enable predictive monitoring
+- Review machine health dashboard weekly
